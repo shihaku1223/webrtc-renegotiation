@@ -1,0 +1,38 @@
+<div>
+    <div class="pure-u-1" id="remoteVideos"></div>
+</div>
+
+<div class="control-container">
+    <h3>Camera ID</h3>
+    <input type="text" id="camera-id" size="10" />
+</div>
+
+<button onclick="startSession()"> Start Session </button><br />
+<button onclick="sendMessage()"> Send Message </button>
+<div>
+    <div>getUserMedia constraints being used:</div>
+    <div><textarea id="constraints" cols=40 rows=4></textarea></div>
+</div>
+
+Local Video
+<br/>
+<div id="localVideos"></div>
+<br/>
+<button onclick="addLocalTrack()"> Add Local Track </button>
+<button onclick="removeLocalTrack()"> Remove Local Track </button>
+
+<div class="control-container">
+    <h3>Commands</h3>
+    <div id="command-controls"></div>
+</div>
+
+<div class="control-container">
+    <h3>Logs</h3>
+    <div id="logs"></div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script type="application/javascript" src="./live.js"></script>
+
