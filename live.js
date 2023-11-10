@@ -17,6 +17,7 @@ var icecandidatesSent = false
 var receiveChannel
 var dataChannel
 var isSendAudio = false
+let clientUUID
 
 const handleDataChannelMessageReceived = (event) =>{
   console.log("dataChannel.OnMessage:", event, event.data.type);
@@ -25,6 +26,13 @@ const handleDataChannelMessageReceived = (event) =>{
       
       const message = JSON.parse(event.data)
       console.log(message)
+      if ("type" in message) {
+        if (message.type == 4) {
+            if (message.data.status == "success") {
+                addLocalTrack()
+            }
+        }
+      }
       if ("sdp" in message) {
         log("Got SDP Message")
         const answerString = atob(message.sdp)
@@ -44,10 +52,12 @@ const handleDataChannelMessageReceived = (event) =>{
         const icecandidateString = atob(message.icecandidate)
         const icecandidate = JSON.parse(icecandidateString)
         console.log(icecandidate)
+        
         pc.addIceCandidate(icecandidate).catch( async () => {
             log("addIceCandidate error")
             console.log("addIceCandidate error")
         })
+        
       }
   } else {
       console.log('Incoming data message');
@@ -286,7 +296,7 @@ addLocalTrack = async () => {
                 console.log(track.kind)
                 console.log(stream)
                 isSendAudio = true
-
+                //Transceivers
                 const currentAudioTransceivers = pc.getTransceivers().filter(tr => tr.receiver.track.kind == 'audio');
                 // add Transceiver 
                 if (currentAudioTransceivers.length == 0) {
@@ -298,6 +308,7 @@ addLocalTrack = async () => {
                         t.sender.replaceTrack(track)
                     })
                 }
+                
 
                 playLocalStream(stream, track.kind)
             });
@@ -325,4 +336,75 @@ removeLocalTrack = async () => {
     localVideosElement.childNodes.forEach( (child) => {
         localVideosElement.removeChild(child)
     })
+}
+
+
+const REQUEST_BIDI_CONNECTION = "bidirectionalaudio"
+
+const DataChannelPacketTypeAudioStart = 0
+const DataChannelPacketTypeAudioStop = 1
+const DataChannelPacketTypeDeviceAudioPlayReady = 2
+const DataChannelPacketTypeRequest = 3
+
+
+generateDataChannelPacket = async (type, body) => {
+    let packet = {
+        type: type,
+        data: body
+    }
+    return packet
+}
+
+generateAudioStart = async (client_id) => {
+    let audioStart = {
+        client_id: clientUUID,
+    }
+    return generateDataChannelPacket(DataChannelPacketTypeAudioStart, audioStart)
+}
+
+generateAudioStop = async (client_id) => {
+    let audioStop = {
+        client_id: clientUUID,
+    }
+    return generateDataChannelPacket(DataChannelPacketTypeAudioStop, audioStop)
+}
+
+generateRequest = async (request_src, request_text) => {
+    let requestID = self.crypto.randomUUID();
+    let request = {
+        request_id: requestID,
+        request_src: request_src,
+        request: request_text
+    }
+    return generateDataChannelPacket(DataChannelPacketTypeRequest, request)
+}
+
+
+sendAudioStartPacket = async () => {
+    let request = await generateAudioStart(clientUUID)
+    requestText = JSON.stringify(request)
+    console.log(requestText)
+    dataChannel.send(requestText)
+}
+
+sendAudioStopPacket = async () => {
+    let request = await generateAudioStop(clientUUID)
+    requestText = JSON.stringify(request)
+    console.log(requestText)
+    dataChannel.send(requestText)
+    removeLocalTrack()
+    init()
+}
+
+sendBidirectRequest = async () => {
+    let request = await generateRequest(clientUUID, REQUEST_BIDI_CONNECTION)
+    requestText = JSON.stringify(request)
+    console.log(requestText)
+    dataChannel.send(requestText)
+}
+
+
+init = async () => {
+    clientUUID = self.crypto.randomUUID();
+    console.log(clientUUID)
 }

@@ -20,7 +20,9 @@ Local Video
 <br/>
 <button onclick="addLocalTrack()"> Add Local Track </button>
 <button onclick="removeLocalTrack()"> Remove Local Track </button>
-
+<button onclick="sendAudioStartPacket()"> Send Audio Start Packet</button>
+<button onclick="sendAudioStopPacket()"> Send Audio Stop Packet</button>
+<button onclick="sendBidirectRequest()"> Send REQUEST_BIDI_CONNECTION</button>
 <div class="control-container">
     <h3>Commands</h3>
     <div id="command-controls"></div>
@@ -30,7 +32,7 @@ Local Video
     <h3>Logs</h3>
     <div id="logs"></div>
 </div>
-
+<body onload="init()"></body>
 
 
 <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
